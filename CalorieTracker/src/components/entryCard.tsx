@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Trash2, Edit3 } from "lucide-react-native";
 import { API_ENDPOINTS } from '../config/api' 
 import { apiRequest } from '../services/apiClient';
+import AreYouSureModal from './AreYouSureModal';
 
 type Item = {
   name: string;
@@ -38,6 +39,7 @@ export default function EntryCard({
   onDeleteSuccess,
 }: EntryCardProps) {
   
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const isMeal = entry.type === "meal";
   const hasItems = entry.items && entry.items.length > 0;
 
@@ -51,6 +53,9 @@ export default function EntryCard({
       }
       catch (error) {        
         console.error('Error deleting entry:', error);
+      }
+      finally {
+        setShowDeleteModal(false);
       }
   }
 
@@ -114,11 +119,20 @@ export default function EntryCard({
             <Edit3 size={16} color="#666" />
           </TouchableOpacity> */}
           
-          <TouchableOpacity style={styles.actionButton} onPress={() => handleDelete(entry._id)}>
+          <TouchableOpacity style={styles.actionButton} onPress={() => setShowDeleteModal(true)}>
             <Trash2 size={16} color="red" />
           </TouchableOpacity>
         </View>
       </View>
+
+      {/* Confirmation Modal */}
+      <AreYouSureModal
+        visible={showDeleteModal}
+        title="Delete Entry?"
+        message="Are you sure you want to delete this entry? This action cannot be undone."
+        onConfirm={() => handleDelete(entry._id)}
+        onCancel={() => setShowDeleteModal(false)}
+      />
     </View>
   );
 }
