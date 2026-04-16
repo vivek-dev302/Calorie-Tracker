@@ -12,6 +12,7 @@ const cors = require('cors');
 const mealAnalysisRoutes = require('./routes/mealAnalysis');
 const indexRoutes = require('./routes/index');
 const authRoutes = require('./routes/auth.routes.js');
+const profileRoutes = require('./routes/profile.routes.js');
 
 
 // Import error handlers
@@ -47,6 +48,7 @@ app.get('/', (req, res) => {
 // API Routes
 app.use('/api', indexRoutes);
 app.use('/api', mealAnalysisRoutes);
+app.use('/api', profileRoutes);
 app.use('/auth', authRoutes);
 
 

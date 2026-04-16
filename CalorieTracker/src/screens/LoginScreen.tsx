@@ -74,38 +74,36 @@ export default LoginScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F7FB',
+    backgroundColor: '#ffffff',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: 16,
   },
 
   card: {
     width: '100%',
     maxWidth: 360,
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 24,
+    backgroundColor: '#EEF5FF',
+    borderRadius: 14,
+    padding: 20,
     alignItems: 'center',
-    elevation: 4, // Android shadow
-    shadowColor: '#000', // iOS shadow
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
+    borderWidth: 1,
+    borderColor: '#DDEAFB',
   },
 
   title: {
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: '700',
-    color: '#111',
+    color: '#111827',
     marginBottom: 8,
   },
 
   subtitle: {
     fontSize: 14,
-    color: '#666',
+    color: '#4B5563',
     textAlign: 'center',
-    marginBottom: 28,
+    marginBottom: 22,
+    lineHeight: 20,
   },
 
   googleButton: {
@@ -119,7 +117,7 @@ const styles = StyleSheet.create({
 
   googleButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
   },
 });

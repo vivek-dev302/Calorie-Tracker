@@ -29,7 +29,7 @@ const InputBox: React.FC<InputBoxProps> = ({
     const showSub = Keyboard.addListener('keyboardDidShow', e => {
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
       const height = e.endCoordinates.height
-      setKeyboardHeight(height + 6)
+      setKeyboardHeight(height - 40)
     })
 
     const hideSub = Keyboard.addListener('keyboardDidHide', () => {

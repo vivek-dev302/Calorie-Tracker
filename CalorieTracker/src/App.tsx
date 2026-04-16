@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import { getToken, logout } from './services/authService';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import LoginScreen from './screens/LoginScreen';
-import HomeScreen from './screens/HomeScreen';
 import './config/googleAuth';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { NavigationContainer } from '@react-navigation/native';
+import MainTabs from './navigation/MainTabs';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -40,10 +41,12 @@ function App() {
   }
 
   return (
-        <SafeAreaProvider>
-          <HomeScreen onLogout={handleLogout} />
-        </SafeAreaProvider>
-);
+    <SafeAreaProvider>
+      <NavigationContainer>
+        <MainTabs onLogout={handleLogout} />
+      </NavigationContainer>
+    </SafeAreaProvider>
+  );
 }
 
 export default App;

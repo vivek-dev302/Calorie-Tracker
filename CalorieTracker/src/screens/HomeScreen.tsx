@@ -1,4 +1,4 @@
-import { ScrollView, StatusBar, StyleSheet, useColorScheme } from 'react-native';
+import { ScrollView, StatusBar, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useEffect, useState } from 'react';
 import InputBox from '../components/InputBox';
@@ -15,8 +15,6 @@ type Props = {
 };
 
 const HomeScreen: React.FC<Props> = ({ onLogout }) => {
-  const isDarkMode = useColorScheme() === 'dark';
-
   const today = new Date();
   const todayISO = `${today.getFullYear()}-${String(
     today.getMonth() + 1
@@ -87,13 +85,15 @@ const HomeScreen: React.FC<Props> = ({ onLogout }) => {
 
   return (
       <SafeAreaView style={styles.container}>
-          <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+          <StatusBar
+            barStyle="dark-content"
+            backgroundColor="#ffffff"
+          />
           <TopNav
             selectedDate={selectedDate}
             onDateChange={setSelectedDate}
             onOpenDrawer={() => {}}
             onShare={() => shareDay(selectedDate)}
-            onLogout={onLogout}
           />
           <DateStrip
             selectedDate={selectedDate}
