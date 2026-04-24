@@ -17,21 +17,23 @@ type MacrosData = {
 type SummaryCardProps = {
   calories: CaloriesData
   macros: MacrosData
+  macroTargets?: { carbs: number; protein: number; fat: number } | null
+  calorieTarget?: number | null
 }
 
-const SummaryCard: React.FC<SummaryCardProps> = ({ calories, macros }) => {
+const SummaryCard: React.FC<SummaryCardProps> = ({ calories, macros, macroTargets, calorieTarget }) => {
   return (
     <View style={styles.container}>
       {/* Calories Section */}
       <View style={styles.card}>
         <View style={styles.header}>
-          <Flame size={16} color="#FF6B35" />
+          <Flame size={13} color="#FF6B35" />
           <Text style={styles.headerText}>Calories</Text>
         </View>
 
         <View style={styles.row}>
           <View style={styles.column}>
-            <Text style={styles.value}>{calories.intake}</Text>
+            <Text style={styles.value}>{calories.intake}{calorieTarget ? <Text style={styles.target}>/{calorieTarget}</Text> : null}</Text>
             <Text style={styles.label}>Intake</Text>
           </View>
 
@@ -50,23 +52,32 @@ const SummaryCard: React.FC<SummaryCardProps> = ({ calories, macros }) => {
       {/* Macros Section */}
       <View style={styles.card}>
         <View style={styles.header}>
-          <Salad size={16} color="#22C55E" />
+          <Salad size={13} color="#22C55E" />
           <Text style={styles.headerText}>Macros</Text>
         </View>
 
         <View style={styles.row}>
           <View style={styles.column}>
-            <Text style={styles.value}>{macros.carbs}</Text>
+            <Text style={styles.value}>
+              <Text>{macros.carbs}</Text>
+              {macroTargets ? <Text style={styles.target}>/{macroTargets.carbs}</Text> : null}
+            </Text>
             <Text style={styles.label}>Carbs (g)</Text>
           </View>
 
           <View style={styles.column}>
-            <Text style={styles.value}>{macros.proteins}</Text>
+            <Text style={styles.value}>
+              <Text>{macros.proteins}</Text>
+              {macroTargets ? <Text style={styles.target}>/{macroTargets.protein}</Text> : null}
+            </Text>
             <Text style={styles.label}>Protein (g)</Text>
           </View>
 
           <View style={styles.column}>
-            <Text style={styles.value}>{macros.fats}</Text>
+            <Text style={styles.value}>
+              <Text>{macros.fats}</Text>
+              {macroTargets ? <Text style={styles.target}>/{macroTargets.fat}</Text> : null}
+            </Text>
             <Text style={styles.label}>Fat (g)</Text>
           </View>
         </View>
@@ -79,22 +90,24 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     gap: 8,
+    marginHorizontal: 12,
+    marginVertical: 6,
   },
   card: {
     flex: 1,
     backgroundColor: '#EEF5FF',
-    borderRadius: 14,
-    padding: 12,
-    paddingBottom: 16,
+    borderRadius: 12,
+    padding: 10,
+    paddingBottom: 12,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    marginBottom: 12,
+    marginBottom: 8,
   },
   headerText: {
-    fontSize: 16,
+    fontSize: 13,
     fontWeight: '600',
   },
   row: {
@@ -106,17 +119,22 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   value: {
-    fontSize: 17,
+    fontSize: 15,
     fontWeight: '400',
   },
   bold: {
     fontWeight: '500',
   },
+  target: {
+    fontSize: 12,
+    fontWeight: '400',
+    color: '#9499a1ff',
+  },
   label: {
-    fontSize: 11.5,
+    fontSize: 10.5,
     color: '#555',
-    marginTop: 2,
-    textAlign:'center'
+    marginTop: 1,
+    textAlign: 'center',
   },
 })
 

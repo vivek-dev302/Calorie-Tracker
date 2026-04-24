@@ -24,6 +24,11 @@ async function googleLogin(req, res) {
         avatar: picture,
         googleId: sub,
       });
+    } else {
+      // keep avatar and name in sync with Google
+      user.avatar = picture;
+      user.name = name;
+      await user.save();
     }
 
     const token = jwt.sign(

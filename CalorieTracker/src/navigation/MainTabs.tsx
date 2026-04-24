@@ -1,8 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { House, Settings, Target, User } from 'lucide-react-native';
+import { House, Target, User } from 'lucide-react-native';
 import HomeScreen from '../screens/HomeScreen';
-import PersonalDetailsScreen from '../screens/PersonalDetailsScreen';
 import DailyGoalsScreen from '../screens/DailyGoalsScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import { MainTabParamList } from '../types/navigation';
@@ -22,8 +21,6 @@ const MainTabs: React.FC<MainTabsProps> = ({ onLogout }) => {
           switch (route.name) {
             case 'Home':
               return <House color={color} size={size} />;
-            case 'PersonalDetails':
-              return <Settings color={color} size={size} />;
             case 'DailyGoals':
               return <Target color={color} size={size} />;
             case 'Profile':
@@ -34,14 +31,9 @@ const MainTabs: React.FC<MainTabsProps> = ({ onLogout }) => {
         },
       })}
     >
-      <Tab.Screen name="Home">
+      <Tab.Screen name="Home" options={{ title: 'Macros' }}>
         {() => <HomeScreen onLogout={onLogout} />}
       </Tab.Screen>
-      <Tab.Screen
-        name="PersonalDetails"
-        component={PersonalDetailsScreen}
-        options={{ title: 'Personal Details' }}
-      />
       <Tab.Screen
         name="DailyGoals"
         component={DailyGoalsScreen}

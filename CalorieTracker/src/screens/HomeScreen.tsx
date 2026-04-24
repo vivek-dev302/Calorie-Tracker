@@ -9,6 +9,7 @@ import DateStrip from '../components/DateStrip';
 import TopNav from '../components/TopNav';
 import { API_ENDPOINTS } from '../config/api';
 import { apiRequest } from '../services/apiClient';
+import { fetchDailyGoals } from '../services/profileService';
 
 type Props = {
   onLogout: () => void;
@@ -23,6 +24,8 @@ const HomeScreen: React.FC<Props> = ({ onLogout }) => {
   const [selectedDate, setSelectedDate] = useState(todayISO);
   const [dayData, setDayData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [macroTargets, setMacroTargets] = useState<{ carbs: number; protein: number; fat: number } | null>(null);
+  const [calorieTarget, setCalorieTarget] = useState<number | null>(null);
   const [analyzingEntry, setAnalyzingEntry] = useState<string | null>(null);
   const [entryError, setEntryError] = useState<{
     userText: string;
@@ -47,6 +50,23 @@ const HomeScreen: React.FC<Props> = ({ onLogout }) => {
   useEffect(() => {
     fetchDayData(selectedDate);
   }, [selectedDate]);
+
+  useEffect(() => {
+    fetchDailyGoals()
+      .then((goals) => {
+        if (goals?.macros) {
+          setMacroTargets({
+            carbs: goals.macros.carbsGrams,
+            protein: goals.macros.proteinGrams,
+            fat: goals.macros.fatsGrams,
+          });
+        }
+        if (goals?.targetCalories) {
+          setCalorieTarget(goals.targetCalories);
+        }
+      })
+      .catch(() => {}); // non-critical, fail silently
+  }, []);
 
   const handleEntrySubmit = (userText: string) => {
     setEntryError(null);
@@ -102,6 +122,8 @@ const HomeScreen: React.FC<Props> = ({ onLogout }) => {
           <SummaryCard
             calories={dayData?.summary?.calories || 0}
             macros={dayData?.summary?.macros || {}}
+            macroTargets={macroTargets}
+            calorieTarget={calorieTarget}
           />
 
           <ScrollView style={{ flex: 1 }}
