@@ -10,6 +10,9 @@ type InputBoxProps = {
   onEntrySubmit: (userText: string) => void
   onEntryAdded: (date: string) => void
   onEntryError: (userText: string, error: string, retryFn: () => void) => void
+  placeholder?: string
+  hideSecondaryActions?: boolean
+  onSuggest?: (userText: string) => void
 }
 
 type FormValues = {
@@ -21,6 +24,9 @@ const InputBox: React.FC<InputBoxProps> = ({
   onEntrySubmit,
   onEntryAdded,
   onEntryError,
+  placeholder = 'What did you eat or exercise?',
+  hideSecondaryActions = false,
+  onSuggest,
 }) => {
 
   const [keyboardHeight, setKeyboardHeight] = useState(0)
@@ -55,6 +61,13 @@ const InputBox: React.FC<InputBoxProps> = ({
 
   const handleSubmit = async (values: FormValues, resetForm: () => void) => {
     if (!values.text.trim()) return
+
+    // If onSuggest is provided (Suggest tab), delegate entirely to it
+    if (onSuggest) {
+      resetForm()
+      onSuggest(values.text.trim())
+      return
+    }
 
     onEntrySubmit(values.text)
 
@@ -103,7 +116,7 @@ const InputBox: React.FC<InputBoxProps> = ({
                   styles.textInput,
                   isSubmitting && styles.disabledInput,
                 ]}
-                placeholder="What did you eat or exercise?"
+                placeholder={placeholder}
                 value={values.text}
                 onChangeText={handleChange('text')}
                 placeholderTextColor="#8294a7ff"
@@ -121,22 +134,24 @@ const InputBox: React.FC<InputBoxProps> = ({
               </Pressable>
             </View>
 
-            <View style={styles.buttonGroup}>
-              <Pressable
-                style={styles.secondaryButton}
-                onPress={handleSave}
-                disabled={isSubmitting}
-              >
-                <Bookmark size={18} color="#444" />
-              </Pressable>
+            {!hideSecondaryActions && (
+              <View style={styles.buttonGroup}>
+                <Pressable
+                  style={styles.secondaryButton}
+                  onPress={handleSave}
+                  disabled={isSubmitting}
+                >
+                  <Bookmark size={18} color="#444" />
+                </Pressable>
 
-              <Pressable
-                style={styles.secondaryButton}
-                onPress={handleImage}
-              >
-                <Image size={18} color="#444" />
-              </Pressable>
-            </View>
+                <Pressable
+                  style={styles.secondaryButton}
+                  onPress={handleImage}
+                >
+                  <Image size={18} color="#444" />
+                </Pressable>
+              </View>
+            )}
           </View>
         </View>
       )}

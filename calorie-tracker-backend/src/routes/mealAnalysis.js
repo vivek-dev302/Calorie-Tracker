@@ -6,6 +6,7 @@ const {
   analyzeText,
   deleteEntries,
   analyzeMealImageHandler,
+  suggestMealsHandler,
 } = require('../controllers/mealAnalysis.controller');
 
 const router = express.Router();
@@ -26,5 +27,6 @@ router.get('/entries', authMiddleware, getEntries);
 router.post('/analyze-user-text', authMiddleware, analyzeText);
 router.delete('/entries', authMiddleware, deleteEntries);
 router.post('/analyze-meal-image', authMiddleware, upload.single('meal_image'), analyzeMealImageHandler);
+router.post('/suggest-meals', authMiddleware, suggestMealsHandler);
 
 module.exports = router;

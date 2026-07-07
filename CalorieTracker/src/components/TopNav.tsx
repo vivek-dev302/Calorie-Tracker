@@ -38,10 +38,10 @@ const TopNav: React.FC<TopNavProps> = ({
 
   return (
     <View style={styles.container}>
-      {/* Left */}
+      {/* Left
       <Pressable onPress={onOpenDrawer} style={styles.iconBtn}>
         <Menu size={20} color="#000" />
-      </Pressable>
+      </Pressable> */}
 
       {/* Center */}
        <Pressable

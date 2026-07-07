@@ -6,7 +6,7 @@ export async function apiRequest(
   endpoint: string,
   method: HttpMethod = 'GET',
   body?: any,
-  timeout = 10000 // default 10s
+  timeout = 15000 // default 10s
 ) {
   const token = await getToken();
 

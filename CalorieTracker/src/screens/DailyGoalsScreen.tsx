@@ -109,6 +109,14 @@ const DailyGoalsScreen: React.FC = () => {
 
         {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
+        {goals?.warnings?.length ? (
+          <View style={styles.warningCard}>
+            {goals.warnings.map((w, i) => (
+              <Text key={i} style={styles.warningText}>⚠ {w}</Text>
+            ))}
+          </View>
+        ) : null}
+
         {!goals?.isComplete ? (
           <View style={styles.card}>
             <Text style={styles.incompleteText}>
@@ -205,6 +213,16 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   incompleteText: { fontSize: 14, color: '#4b5563', lineHeight: 22 },
+  warningCard: {
+    backgroundColor: '#fffbeb',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#fde68a',
+    padding: 12,
+    marginBottom: 12,
+    gap: 4,
+  },
+  warningText: { fontSize: 13, color: '#92400e', lineHeight: 20 },
   // Calorie card
   calorieCard: {
     backgroundColor: '#EEF5FF',

@@ -31,12 +31,14 @@ type Entry = {
 type EntryCardProps = {
   entry: Entry;
   onDeleteSuccess?: () => void;
+  readOnly?: boolean;
 };
 
 
 export default function EntryCard({
   entry,
   onDeleteSuccess,
+  readOnly = false,
 }: EntryCardProps) {
   
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -114,25 +116,25 @@ export default function EntryCard({
       <View style={styles.bottomRow}>
         <Text style={styles.time}>{time}</Text>
 
-        <View style={styles.actionButtons}>
-          {/* <TouchableOpacity style={styles.actionButton}>
-            <Edit3 size={16} color="#666" />
-          </TouchableOpacity> */}
-          
-          <TouchableOpacity style={styles.actionButton} onPress={() => setShowDeleteModal(true)}>
-            <Trash2 size={16} color="red" />
-          </TouchableOpacity>
-        </View>
+        {!readOnly && (
+          <View style={styles.actionButtons}>
+            <TouchableOpacity style={styles.actionButton} onPress={() => setShowDeleteModal(true)}>
+              <Trash2 size={16} color="red" />
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
 
       {/* Confirmation Modal */}
-      <AreYouSureModal
-        visible={showDeleteModal}
-        title="Delete Entry?"
-        message="Are you sure you want to delete this entry? This action cannot be undone."
-        onConfirm={() => handleDelete(entry._id)}
-        onCancel={() => setShowDeleteModal(false)}
-      />
+      {!readOnly && (
+        <AreYouSureModal
+          visible={showDeleteModal}
+          title="Delete Entry?"
+          message="Are you sure you want to delete this entry? This action cannot be undone."
+          onConfirm={() => handleDelete(entry._id)}
+          onCancel={() => setShowDeleteModal(false)}
+        />
+      )}
     </View>
   );
 }

@@ -9,6 +9,7 @@ export const API_ENDPOINTS = {
   DELETE_ENTRY: `${API_BASE_URL}/api/entries`,
   ANALYZE_USER_TEXT: `${API_BASE_URL}/api/analyze-user-text`,
   ANALYZE_MEAL_IMAGE: `${API_BASE_URL}/api/analyze-meal-image`,
+  SUGGEST_MEALS: `${API_BASE_URL}/api/suggest-meals`,
   GOOGLE_AUTH: `${API_BASE_URL}/auth/google`,
   PROFILE: `${API_BASE_URL}/api/profile`,
   DAILY_GOALS: `${API_BASE_URL}/api/profile/daily-goals`,

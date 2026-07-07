@@ -1,9 +1,10 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { House, Target, User } from 'lucide-react-native';
+import { ClipboardList, Target, User, Lightbulb } from 'lucide-react-native';
 import HomeScreen from '../screens/HomeScreen';
 import DailyGoalsScreen from '../screens/DailyGoalsScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import SuggestScreen from '../screens/SuggestScreen';
 import { MainTabParamList } from '../types/navigation';
 
 type MainTabsProps = {
@@ -20,20 +21,27 @@ const MainTabs: React.FC<MainTabsProps> = ({ onLogout }) => {
         tabBarIcon: ({ color, size }) => {
           switch (route.name) {
             case 'Home':
-              return <House color={color} size={size} />;
+              return <ClipboardList color={color} size={size} />;
             case 'DailyGoals':
               return <Target color={color} size={size} />;
+            case 'Suggest':
+              return <Lightbulb color={color} size={size} />;
             case 'Profile':
               return <User color={color} size={size} />;
             default:
-              return <House color={color} size={size} />;
+              return <ClipboardList color={color} size={size} />;
           }
         },
       })}
     >
-      <Tab.Screen name="Home" options={{ title: 'Macros' }}>
+      <Tab.Screen name="Home" options={{ title: 'Entry' }}>
         {() => <HomeScreen onLogout={onLogout} />}
       </Tab.Screen>
+      <Tab.Screen
+        name="Suggest"
+        component={SuggestScreen}
+        options={{ title: 'Suggest' }}
+      />
       <Tab.Screen
         name="DailyGoals"
         component={DailyGoalsScreen}

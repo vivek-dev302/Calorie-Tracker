@@ -30,5 +30,6 @@ export type DailyGoals = {
     carbsGrams: number;
     fatsGrams: number;
   } | null;
+  warnings: string[];
   isComplete: boolean;
 };

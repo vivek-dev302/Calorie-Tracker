@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const multer = require('multer');
-const { analyzeUserText, analyzeMealImage } = require('../services/geminiService');
+const { analyzeUserText, analyzeMealImage, suggestMeals } = require('../services/geminiService');
 const Entry = require('../models/Entry');
 
 async function getEntries(req, res) {
@@ -315,4 +315,36 @@ async function analyzeMealImageHandler(req, res) {
   }
 }
 
-module.exports = { getEntries, analyzeText, deleteEntries, analyzeMealImageHandler };
+async function suggestMealsHandler(req, res) {
+  try {
+    const userText = req.body.user_text;
+    if (!userText || typeof userText !== 'string' || userText.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'user_text is required and must be a non-empty string',
+      });
+    }
+
+    const suggestions = await suggestMeals(userText.trim());
+    return res.status(200).json({ success: true, data: { suggestions } });
+  } catch (error) {
+    console.error('Error in /suggest-meals:', error);
+    const status = error?.status ?? error?.cause?.status;
+    const code = error?.code ?? error?.cause?.code;
+    const message = error?.message ?? '';
+
+    if (status === 401 || code === 'invalid_api_key' || code === 'missing_api_key') {
+      return res.status(401).json({ success: false, error: 'Gemini authentication failed.' });
+    }
+    if (status === 429 || code === 'insufficient_quota' || message.toLowerCase().includes('quota')) {
+      return res.status(429).json({ success: false, error: 'Gemini rate limit hit. Try again later.' });
+    }
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to generate meal suggestions',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+    });
+  }
+}
+
+module.exports = { getEntries, analyzeText, deleteEntries, analyzeMealImageHandler, suggestMealsHandler };

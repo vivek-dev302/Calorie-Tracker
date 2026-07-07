@@ -384,8 +384,178 @@ async function analyzeMealImage(imageData, imageMimeType = 'image/jpeg') {
   }
 }
 
+function buildSuggestMealsPrompt(userText) {
+  return `You are an expert nutritionist and meal planner. A user wants meal suggestions that fit within specific nutritional constraints.
+
+User's constraint: "${userText}"
+
+Provide exactly 2-3 meal suggestions that fit within the stated calorie and macro constraints. Each suggestion should be a realistic, complete meal.
+
+Return ONLY a valid JSON object with EXACTLY this structure (no extra text, no markdown fences):
+{
+  "suggestions": [
+    {
+      "userText": string,       // Restate the user's constraint
+      "name": string,           // Short meal name
+      "type": "meal",
+      "items": [                // Array of food items in the meal
+        {
+          "name": string,
+          "calories": number,
+          "proteins": number,
+          "carbs": number,
+          "fats": number
+        }
+      ],
+      "calories": number,       // Total calories
+      "proteins": number,       // Total protein in grams
+      "carbs": number,          // Total carbs in grams
+      "fats": number,           // Total fats in grams
+      "healthAnalysis": string  // Brief description and why it fits the constraints
+    }
+  ]
+}
+
+EXAMPLE 1:
+Input: "400 calories and 22g protein"
+Output:
+{
+  "suggestions": [
+    {
+      "userText": "400 calories and 22g protein",
+      "name": "Boiled Eggs with Bread",
+      "type": "meal",
+      "items": [
+        { "name": "Boiled Eggs (2 large)", "calories": 156, "proteins": 12, "carbs": 1.2, "fats": 10.6 },
+        { "name": "Whole Wheat Bread (2 slices)", "calories": 160, "proteins": 6, "carbs": 30, "fats": 2 },
+        { "name": "Banana (1 small, 90g)", "calories": 80, "proteins": 1, "carbs": 20, "fats": 0.3 }
+      ],
+      "calories": 396,
+      "proteins": 19,
+      "carbs": 51.2,
+      "fats": 12.9,
+      "healthAnalysis": "A simple, filling breakfast with eggs providing most of the protein. Bread gives you energy from carbs and the banana adds natural sugar and potassium. Easy to make and very affordable."
+    },
+    {
+      "userText": "400 calories and 22g protein",
+      "name": "Dal Rice",
+      "type": "meal",
+      "items": [
+        { "name": "Cooked Moong Dal (150g)", "calories": 140, "proteins": 10, "carbs": 22, "fats": 1 },
+        { "name": "Cooked White Rice (150g)", "calories": 195, "proteins": 4, "carbs": 43, "fats": 0.4 },
+        { "name": "Ghee (5g)", "calories": 45, "proteins": 0, "carbs": 0, "fats": 5 }
+      ],
+      "calories": 380,
+      "proteins": 14,
+      "carbs": 65,
+      "fats": 6.4,
+      "healthAnalysis": "A classic home-cooked meal that is easy to digest and very filling. Dal provides plant-based protein and rice gives sustained energy. A staple in most Indian households."
+    },
+    {
+      "userText": "400 calories and 22g protein",
+      "name": "Paneer Bhurji with Roti",
+      "type": "meal",
+      "items": [
+        { "name": "Paneer (80g)", "calories": 220, "proteins": 16, "carbs": 3, "fats": 16 },
+        { "name": "Whole Wheat Roti (1 medium)", "calories": 100, "proteins": 3, "carbs": 20, "fats": 1 },
+        { "name": "Onion and Tomato (50g)", "calories": 25, "proteins": 0.8, "carbs": 5.5, "fats": 0.1 }
+      ],
+      "calories": 345,
+      "proteins": 19.8,
+      "carbs": 28.5,
+      "fats": 17.1,
+      "healthAnalysis": "A quick and common Indian meal. Paneer is a great source of protein and fat, and roti keeps it light. Easy to cook in under 10 minutes with basic ingredients."
+    }
+  ]
+}
+
+EXAMPLE 2:
+Input: "300 calories, high carb for energy before workout"
+Output:
+{
+  "suggestions": [
+    {
+      "userText": "300 calories, high carb for energy before workout",
+      "name": "Banana with Oats",
+      "type": "meal",
+      "items": [
+        { "name": "Cooked Oats (80g dry)", "calories": 190, "proteins": 6, "carbs": 34, "fats": 3.5 },
+        { "name": "Banana (1 medium, 120g)", "calories": 107, "proteins": 1.3, "carbs": 27, "fats": 0.4 }
+      ],
+      "calories": 297,
+      "proteins": 7.3,
+      "carbs": 61,
+      "fats": 3.9,
+      "healthAnalysis": "A simple and very common pre-workout meal. Oats give slow-release energy and banana gives a quick sugar boost. Takes 5 minutes to make and is easy on the stomach."
+    },
+    {
+      "userText": "300 calories, high carb for energy before workout",
+      "name": "Bread with Peanut Butter",
+      "type": "meal",
+      "items": [
+        { "name": "White Bread (2 slices)", "calories": 140, "proteins": 4.6, "carbs": 26, "fats": 1.8 },
+        { "name": "Peanut Butter (20g)", "calories": 120, "proteins": 5, "carbs": 4, "fats": 10 }
+      ],
+      "calories": 260,
+      "proteins": 9.6,
+      "carbs": 30,
+      "fats": 11.8,
+      "healthAnalysis": "A quick snack most people have at home. Bread gives fast carbs for energy and peanut butter adds some protein and healthy fats to keep you going through the workout."
+    }
+  ]
+}
+
+Rules:
+- Always return 2-3 suggestions, never fewer
+- Each suggestion must fit within the user's stated calorie limit
+- Prioritize the macro constraints the user mentions
+- Each suggestion must be a simple, everyday meal that most people are familiar with — think home-cooked food, common street food, or basic staples (e.g. eggs on toast, dal rice, oats, roti sabzi, pasta, sandwich, khichdi, poha). Avoid fancy, restaurant-style, or exotic meals that an average person would not cook at home.
+- Include items array with accurate per-item breakdown
+- All numeric values must be valid JSON numbers
+- Do NOT wrap output in markdown code fences
+- Do NOT include any text before or after the JSON object`;
+}
+
+/**
+ * Suggest meals based on user's calorie/macro constraints
+ * @param {string} userText - User's constraint description
+ * @returns {Promise<Object[]>} Array of meal suggestion objects
+ */
+async function suggestMeals(userText) {
+  try {
+    console.log(' Starting meal suggestion with Gemini...');
+    console.log(' Constraint text:', userText);
+
+    const genAI = getGeminiClient();
+    const modelName = getTextModelName();
+    const model = genAI.getGenerativeModel({
+      model: modelName,
+      generationConfig: { temperature: 0.6 },
+    });
+
+    const prompt = buildSuggestMealsPrompt(userText);
+    const result = await model.generateContent(prompt);
+    const text = result?.response?.text?.() ?? '';
+
+    console.log(' Raw Gemini suggestion response:', text);
+
+    const parsed = extractJsonObject(text);
+    if (!Array.isArray(parsed?.suggestions)) {
+      throw new Error('Gemini did not return a suggestions array');
+    }
+
+    const suggestions = parsed.suggestions.map(validateAndNormalizeNutritionData);
+    console.log(` Parsed ${suggestions.length} meal suggestions`);
+    return suggestions;
+  } catch (error) {
+    console.error(' Error in suggestMeals:', error.message);
+    throw wrapGeminiError(error, 'Failed to suggest meals');
+  }
+}
+
 module.exports = {
   analyzeUserText,
   analyzeMealImage,
+  suggestMeals,
 };
 

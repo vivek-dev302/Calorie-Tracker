@@ -25,9 +25,26 @@ function calculateBMR(weightKg, heightCm, age, gender) {
   return round(gender === 'female' ? base - 161 : base + 5, 0);
 }
 
+// Macro splits by goal: [proteinPct, carbsPct, fatPct]
+// lose:     high protein to preserve muscle during deficit
+// maintain: balanced general-purpose split
+// gain:     higher carbs to fuel training, moderate protein for muscle growth
+const MACRO_SPLITS = {
+  lose:     { protein: 0.35, carbs: 0.35, fat: 0.30 },
+  maintain: { protein: 0.30, carbs: 0.40, fat: 0.30 },
+  gain:     { protein: 0.30, carbs: 0.45, fat: 0.25 },
+};
+
+// Minimum safe calories by gender (evidence-based clinical thresholds)
+const MIN_CALORIES = { male: 1500, female: 1200 };
+
+// Default weekly rate when goal is lose/gain but rate is unset (0.25 kg/week = ~275 kcal/day)
+const DEFAULT_WEEKLY_RATE_KG = 0.25;
+
 function calculateDailyGoals(profile) {
   const { weightKg, heightCm, age, gender, activityLevel, goalType, weeklyGoalRateKg } = profile || {};
 
+  const warnings = [];
   const bmi = calculateBMI(weightKg, heightCm);
   const bmr = calculateBMR(weightKg, heightCm, age, gender);
 
@@ -39,21 +56,46 @@ function calculateDailyGoals(profile) {
       targetCalories: null,
       waterMl: null,
       macros: null,
+      warnings,
       isComplete: false,
     };
   }
 
+  // Activity level — warn if missing, fall back to sedentary
+  if (!activityLevel || !ACTIVITY_MULTIPLIERS[activityLevel]) {
+    warnings.push('Activity level not set — using sedentary as default.');
+  }
   const multiplier = ACTIVITY_MULTIPLIERS[activityLevel] || ACTIVITY_MULTIPLIERS.sedentary;
   const tdee = round(bmr * multiplier, 0);
 
-  const dailyAdjustment = round(((weeklyGoalRateKg || 0) * 7700) / 7, 0);
+  // Weekly rate — use default when goal requires a deficit/surplus but rate is 0 or unset
+  const effectiveGoal = goalType || 'maintain';
+  let effectiveRate = weeklyGoalRateKg || 0;
+
+  if ((effectiveGoal === 'lose' || effectiveGoal === 'gain') && effectiveRate === 0) {
+    effectiveRate = DEFAULT_WEEKLY_RATE_KG;
+    warnings.push(`Weekly goal rate not set — using ${DEFAULT_WEEKLY_RATE_KG} kg/week as default.`);
+  }
+
+  // Clamp rate to safe range (0–1 kg/week) regardless of what's stored
+  effectiveRate = Math.min(Math.max(effectiveRate, 0), 1);
+
+  const dailyAdjustment = round((effectiveRate * 7700) / 7, 0);
   let targetCalories = tdee;
+  if (effectiveGoal === 'lose') targetCalories = tdee - dailyAdjustment;
+  if (effectiveGoal === 'gain') targetCalories = tdee + dailyAdjustment;
 
-  if (goalType === 'lose') targetCalories = tdee - dailyAdjustment;
-  if (goalType === 'gain') targetCalories = tdee + dailyAdjustment;
+  // Gender-aware calorie floor
+  const calorieFloor = MIN_CALORIES[gender] ?? MIN_CALORIES.female;
+  if (targetCalories < calorieFloor) {
+    warnings.push(`Target calories were below the safe minimum (${calorieFloor} kcal) and have been adjusted.`);
+  }
+  const safeCalories = Math.max(calorieFloor, targetCalories);
 
-  const safeCalories = Math.max(1200, targetCalories);
   const waterMl = weightKg ? round(weightKg * 35, 0) : null;
+
+  // Goal-aware macro split
+  const split = MACRO_SPLITS[effectiveGoal] ?? MACRO_SPLITS.maintain;
 
   return {
     bmi,
@@ -62,10 +104,11 @@ function calculateDailyGoals(profile) {
     targetCalories: safeCalories,
     waterMl,
     macros: {
-      proteinGrams: round((safeCalories * 0.3) / 4, 0),
-      carbsGrams: round((safeCalories * 0.4) / 4, 0),
-      fatsGrams: round((safeCalories * 0.3) / 9, 0),
+      proteinGrams: round((safeCalories * split.protein) / 4, 0),
+      carbsGrams:   round((safeCalories * split.carbs)   / 4, 0),
+      fatsGrams:    round((safeCalories * split.fat)     / 9, 0),
     },
+    warnings,
     isComplete: true,
   };
 }

@@ -1,4 +1,4 @@
-import { ScrollView, StatusBar, StyleSheet } from 'react-native';
+import { ScrollView, StatusBar, StyleSheet, Text, View, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useEffect, useState } from 'react';
 import InputBox from '../components/InputBox';
@@ -24,6 +24,7 @@ const HomeScreen: React.FC<Props> = ({ onLogout }) => {
   const [selectedDate, setSelectedDate] = useState(todayISO);
   const [dayData, setDayData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [macroTargets, setMacroTargets] = useState<{ carbs: number; protein: number; fat: number } | null>(null);
   const [calorieTarget, setCalorieTarget] = useState<number | null>(null);
   const [analyzingEntry, setAnalyzingEntry] = useState<string | null>(null);
@@ -95,6 +96,12 @@ const HomeScreen: React.FC<Props> = ({ onLogout }) => {
     }
   };
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchDayData(selectedDate);
+    setRefreshing(false);
+  };
+
   const handleDismissError = () => {
     setEntryError(null);
   };
@@ -128,7 +135,10 @@ const HomeScreen: React.FC<Props> = ({ onLogout }) => {
 
           <ScrollView style={{ flex: 1 }}
               contentContainerStyle={{ padding: 16 }}
-              keyboardShouldPersistTaps="handled">
+              keyboardShouldPersistTaps="handled"
+              refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+              }>
               {analyzingEntry && (
               <SkeletonEntryCard userText={analyzingEntry} />
               )}
@@ -147,6 +157,13 @@ const HomeScreen: React.FC<Props> = ({ onLogout }) => {
                 onDeleteSuccess={() => fetchDayData(selectedDate)}
               />
             ))}
+            {!loading && !analyzingEntry && !entryError && (!dayData?.entries || dayData.entries.length === 0) && (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyEmoji}>🍽️</Text>
+                <Text style={styles.emptyTitle}>Nothing logged yet</Text>
+                <Text style={styles.emptySubtitle}>Type what you ate or drank below and we'll handle the rest</Text>
+              </View>
+            )}
           </ScrollView>
           <InputBox
             selectedDate={selectedDate}
@@ -162,6 +179,29 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#ffffff',
+  },
+  emptyState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 48,
+    paddingHorizontal: 32,
+  },
+  emptyEmoji: {
+    fontSize: 40,
+    marginBottom: 12,
+  },
+  emptyTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 6,
+  },
+  emptySubtitle: {
+    fontSize: 13,
+    color: '#9ca3af',
+    textAlign: 'center',
+    lineHeight: 19,
   },
 });
 

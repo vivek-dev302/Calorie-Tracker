@@ -2,17 +2,8 @@ import React from 'react'
 import { View, Text, StyleSheet } from 'react-native'
 import { Flame, Salad } from 'lucide-react-native'
 
-type CaloriesData = {
-  netCalories: number
-  intake: number
-  burned: number
-}
-
-type MacrosData = {
-  carbs: number
-  proteins: number
-  fats: number
-}
+type CaloriesData = { netCalories: number; intake: number; burned: number }
+type MacrosData = { carbs: number; proteins: number; fats: number }
 
 type SummaryCardProps = {
   calories: CaloriesData
@@ -21,67 +12,63 @@ type SummaryCardProps = {
   calorieTarget?: number | null
 }
 
+const r = (n: number) => Math.round(n)
+
 const SummaryCard: React.FC<SummaryCardProps> = ({ calories, macros, macroTargets, calorieTarget }) => {
+  const remaining = calorieTarget != null ? calorieTarget - r(calories.intake) : null
+
   return (
     <View style={styles.container}>
-      {/* Calories Section */}
+
+      {/* Calories */}
       <View style={styles.card}>
         <View style={styles.header}>
           <Flame size={13} color="#FF6B35" />
           <Text style={styles.headerText}>Calories</Text>
         </View>
-
         <View style={styles.row}>
           <View style={styles.column}>
-            <Text style={styles.value}>{calories.intake}{calorieTarget ? <Text style={styles.target}>/{calorieTarget}</Text> : null}</Text>
+            <Text style={styles.value}>{r(calories.intake)}</Text>
             <Text style={styles.label}>Intake</Text>
           </View>
-
           <View style={styles.column}>
-            <Text style={styles.value}>{calories.burned}</Text>
+            <Text style={styles.value}>{r(calories.burned)}</Text>
             <Text style={styles.label}>Burned</Text>
           </View>
-
           <View style={styles.column}>
-            <Text style={[styles.value, styles.bold]}>{calories.netCalories}</Text>
-            <Text style={styles.label}>Total</Text>
+            <Text style={[styles.value, remaining != null && remaining < 0 && styles.over]}>
+              {remaining != null ? remaining : r(calories.netCalories)}
+            </Text>
+            <Text style={styles.label}>Remaining</Text>
           </View>
         </View>
       </View>
 
-      {/* Macros Section */}
+      {/* Macros */}
       <View style={styles.card}>
         <View style={styles.header}>
           <Salad size={13} color="#22C55E" />
           <Text style={styles.headerText}>Macros</Text>
         </View>
-
         <View style={styles.row}>
-          <View style={styles.column}>
-            <Text style={styles.value}>
-              <Text>{macros.carbs}</Text>
-              {macroTargets ? <Text style={styles.target}>/{macroTargets.carbs}</Text> : null}
-            </Text>
-            <Text style={styles.label}>Carbs (g)</Text>
-          </View>
-
-          <View style={styles.column}>
-            <Text style={styles.value}>
-              <Text>{macros.proteins}</Text>
-              {macroTargets ? <Text style={styles.target}>/{macroTargets.protein}</Text> : null}
-            </Text>
-            <Text style={styles.label}>Protein (g)</Text>
-          </View>
-
-          <View style={styles.column}>
-            <Text style={styles.value}>
-              <Text>{macros.fats}</Text>
-              {macroTargets ? <Text style={styles.target}>/{macroTargets.fat}</Text> : null}
-            </Text>
-            <Text style={styles.label}>Fat (g)</Text>
-          </View>
+          {[
+            { current: macros.carbs, target: macroTargets?.carbs, label: 'Carbs' },
+            { current: macros.proteins, target: macroTargets?.protein, label: 'Protein' },
+            { current: macros.fats, target: macroTargets?.fat, label: 'Fat' },
+          ].map((m) => (
+            <View key={m.label} style={styles.column}>
+              <View style={styles.macroValueRow}>
+                <Text style={styles.value}>{r(m.current)}</Text>
+                {m.target != null
+                  ? <Text style={styles.target}>/{m.target}</Text>
+                  : null}
+              </View>
+              <Text style={styles.label}>{m.label} (g)</Text>
+            </View>
+          ))}
         </View>
       </View>
+
     </View>
   )
 }
@@ -89,7 +76,7 @@ const SummaryCard: React.FC<SummaryCardProps> = ({ calories, macros, macroTarget
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 6,
     marginHorizontal: 12,
     marginVertical: 6,
   },
@@ -106,36 +93,14 @@ const styles = StyleSheet.create({
     gap: 4,
     marginBottom: 8,
   },
-  headerText: {
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  column: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  value: {
-    fontSize: 15,
-    fontWeight: '400',
-  },
-  bold: {
-    fontWeight: '500',
-  },
-  target: {
-    fontSize: 12,
-    fontWeight: '400',
-    color: '#9499a1ff',
-  },
-  label: {
-    fontSize: 10.5,
-    color: '#555',
-    marginTop: 1,
-    textAlign: 'center',
-  },
+  headerText: { fontSize: 13, fontWeight: '600' },
+  row: { flexDirection: 'row', justifyContent: 'space-between' },
+  column: { alignItems: 'center', flex: 1 },
+  macroValueRow: { flexDirection: 'row', alignItems: 'baseline', gap: 1 },
+  value: { fontSize: 15, fontWeight: '500', color: '#111827' },
+  over: { color: '#dc2626' },
+  target: { fontSize: 11, fontWeight: '400', color: '#969ba3ff' },
+  label: { fontSize: 10, color: '#6b7280', marginTop: 2, textAlign: 'center' },
 })
 
 export default SummaryCard
